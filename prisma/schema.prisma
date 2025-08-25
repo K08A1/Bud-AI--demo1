@@ -1,0 +1,453 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户账号（家长）
+model User {
+  id              String    @id @default(cuid())
+  phone           String    @unique
+  password        String
+  role            UserRole  @default(PARENT)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLoginAt     DateTime?
+  
+  // 关系
+  children        Child[]
+  weeklyReports   WeeklyReport[]
+  familyGames     FamilyGameRecord[]
+  notifications   Notification[]
+  
+  @@index([phone])
+}
+
+// 用户角色
+enum UserRole {
+  PARENT
+  ADMIN
+}
+
+// 孩子档案
+model Child {
+  id              String    @id @default(cuid())
+  userId          String
+  nickname        String
+  grade           String    // 年级
+  interests       String[]  // 兴趣标签
+  avatarUrl       String?
+  
+  // 等级系统
+  level           Int       @default(1)
+  xp              Int       @default(0)
+  streak          Int       @default(0)
+  streakFreezeUsed Boolean  @default(false)
+  globalTitle     String    @default("小探索家Ⅰ")
+  
+  // 5C能力值
+  expressionScore Float     @default(3.0)
+  logicScore      Float     @default(3.0)
+  explorationScore Float    @default(3.0)
+  creativityScore Float     @default(3.0)
+  habitScore      Float     @default(3.0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // 关系
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessments     Assessment[]
+  taskRecords     TaskRecord[]
+  badges          BadgeAward[]
+  works           Work[]
+  coCreations     CoCreationContribution[]
+  growthRecords   GrowthRecord[]
+  
+  @@index([userId])
+}
+
+// AI诊断评估记录
+model Assessment {
+  id              String    @id @default(cuid())
+  childId         String
+  type            AssessmentType
+  
+  // 评估结果
+  expressionScore Float
+  logicScore      Float
+  explorationScore Float
+  creativityScore Float
+  habitScore      Float
+  
+  aiAnalysis      String    // AI分析文本
+  suggestions     String[]  // 建议列表
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  
+  @@index([childId, createdAt])
+}
+
+enum AssessmentType {
+  INITIAL     // 入门诊断
+  WEEKLY      // 周评估
+  MONTHLY     // 月评估
+}
+
+// 任务定义
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  type            TaskType
+  difficulty      Int       // 1-5难度等级
+  
+  // 任务内容
+  description     String
+  prompt          String    // AI提示词
+  constraints     Json?     // 任务约束条件
+  
+  // 能力维度权重
+  expressionWeight Float    @default(0)
+  logicWeight     Float     @default(0)
+  explorationWeight Float   @default(0)
+  creativityWeight Float    @default(0)
+  habitWeight     Float     @default(0)
+  
+  // 预期时长（分钟）
+  expectedMinutes Int
+  xpReward        Int       // 经验值奖励
+  
+  tags            String[]  // 标签
+  isActive        Boolean   @default(true)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // 关系
+  taskRecords     TaskRecord[]
+  
+  @@index([type, difficulty])
+}
+
+enum TaskType {
+  MAIN_TASK       // 主任务
+  MICRO_TASK      // 微任务
+  SPECIAL_TRAINING // 专项训练
+}
+
+// 任务完成记录
+model TaskRecord {
+  id              String    @id @default(cuid())
+  childId         String
+  taskId          String
+  
+  // 完成情况
+  status          TaskStatus
+  startedAt       DateTime
+  completedAt     DateTime?
+  timeSpent       Int?      // 用时（秒）
+  
+  // 提交内容
+  submission      String?
+  
+  // AI评估
+  aiEvaluation    Json?     // AI评估详情
+  expressionScore Float?
+  logicScore      Float?
+  explorationScore Float?
+  creativityScore Float?
+  habitScore      Float?
+  
+  feedback        String?   // AI反馈文本
+  suggestions     String[]  // 改进建议
+  exemplarAnswer  String?   // 示例答案
+  
+  // 重试记录
+  retryCount      Int       @default(0)
+  xpEarned        Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // 关系
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  task            Task      @relation(fields: [taskId], references: [id])
+  coachSessions   CoachSession[]
+  
+  @@index([childId, taskId])
+  @@index([childId, createdAt])
+}
+
+enum TaskStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+// AI陪练对话记录
+model CoachSession {
+  id              String    @id @default(cuid())
+  taskRecordId    String
+  
+  // 对话内容
+  messages        Json      // 对话历史
+  turnCount       Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // 关系
+  taskRecord      TaskRecord @relation(fields: [taskRecordId], references: [id], onDelete: Cascade)
+  
+  @@index([taskRecordId])
+}
+
+// 徽章定义
+model Badge {
+  id              String    @id @default(cuid())
+  name            String
+  description     String
+  iconUrl         String
+  category        BadgeCategory
+  
+  // 获得条件
+  criteria        Json      // 获得条件配置
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  awards          BadgeAward[]
+}
+
+enum BadgeCategory {
+  PERSISTENCE     // 坚持类
+  ACHIEVEMENT     // 成就类
+  SKILL           // 技能类
+  COLLABORATION   // 协作类
+}
+
+// 徽章获得记录
+model BadgeAward {
+  id              String    @id @default(cuid())
+  childId         String
+  badgeId         String
+  
+  awardedAt       DateTime  @default(now())
+  
+  // 关系
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  badge           Badge     @relation(fields: [badgeId], references: [id])
+  
+  @@unique([childId, badgeId])
+  @@index([childId])
+}
+
+// 作品存档
+model Work {
+  id              String    @id @default(cuid())
+  childId         String
+  title           String
+  content         String
+  type            String    // 作品类型
+  
+  // 评价
+  aiScore         Float?
+  aiComment       String?
+  parentLikes     Int       @default(0)
+  parentComment   String?
+  
+  isPublic        Boolean   @default(false)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // 关系
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  
+  @@index([childId, createdAt])
+}
+
+// 共创主题
+model CoCreationTheme {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  prompt          String    // 引导语
+  
+  startDate       DateTime
+  endDate         DateTime
+  
+  isActive        Boolean   @default(true)
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  contributions   CoCreationContribution[]
+  results         CoCreationResult[]
+}
+
+// 共创贡献
+model CoCreationContribution {
+  id              String    @id @default(cuid())
+  themeId         String
+  childId         String
+  
+  content         String
+  type            String    // 贡献类型：续写/插画/角色等
+  
+  likes           Int       @default(0)
+  isBestContribution Boolean @default(false)
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  theme           CoCreationTheme @relation(fields: [themeId], references: [id])
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  
+  @@index([themeId, childId])
+}
+
+// 共创成果
+model CoCreationResult {
+  id              String    @id @default(cuid())
+  themeId         String
+  
+  title           String
+  content         String    // 最终拼接内容
+  illustrationUrl String?   // 插画URL
+  audioUrl        String?   // 音频URL
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  theme           CoCreationTheme @relation(fields: [themeId], references: [id])
+}
+
+// 成长记录
+model GrowthRecord {
+  id              String    @id @default(cuid())
+  childId         String
+  
+  date            DateTime
+  
+  // 5C能力记录
+  expressionScore Float
+  logicScore      Float
+  explorationScore Float
+  creativityScore Float
+  habitScore      Float
+  
+  // 统计数据
+  tasksCompleted  Int
+  xpEarned        Int
+  retryCount      Int
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  
+  @@unique([childId, date])
+  @@index([childId, date])
+}
+
+// 周报
+model WeeklyReport {
+  id              String    @id @default(cuid())
+  userId          String
+  weekStart       DateTime
+  weekEnd         DateTime
+  
+  // 报告内容
+  summary         String
+  insights        Json      // 详细洞察
+  suggestions     String[]  // 建议列表
+  familyGameIds   String[]  // 推荐的家庭游戏ID
+  
+  viewCount       Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, weekStart])
+  @@index([userId, weekStart])
+}
+
+// 家庭游戏定义
+model FamilyGame {
+  id              String    @id @default(cuid())
+  name            String
+  description     String
+  
+  // 游戏内容
+  targetSkill     String    // 目标能力
+  duration        Int       // 预计时长（分钟）
+  materials       String[]  // 需要材料
+  instructions    String    // 引导话术
+  closure         String    // 复盘建议
+  
+  minAge          Int       @default(3)
+  maxAge          Int       @default(12)
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  records         FamilyGameRecord[]
+}
+
+// 家庭游戏记录
+model FamilyGameRecord {
+  id              String    @id @default(cuid())
+  userId          String
+  gameId          String
+  
+  completedAt     DateTime  @default(now())
+  feedback        String?   // 家长反馈
+  xpAwarded       Int       @default(20)
+  
+  // 关系
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game            FamilyGame @relation(fields: [gameId], references: [id])
+  
+  @@index([userId, completedAt])
+}
+
+// 通知
+model Notification {
+  id              String    @id @default(cuid())
+  userId          String
+  
+  type            NotificationType
+  title           String
+  content         String
+  
+  isRead          Boolean   @default(false)
+  
+  createdAt       DateTime  @default(now())
+  
+  // 关系
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+}
+
+enum NotificationType {
+  DAILY_REMINDER
+  WEEKLY_REPORT
+  ACHIEVEMENT
+  SYSTEM
+}
