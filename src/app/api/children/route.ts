@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,25 +11,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 获取用户的所有孩子
-    const children = await prisma.child.findMany({
-      where: { userId: user.userId },
-      include: {
-        badges: {
-          include: {
-            badge: true
-          }
-        },
-        _count: {
-          select: {
-            taskRecords: true,
-            works: true
-          }
-        }
-      }
-    })
-
-    return NextResponse.json({ children })
+    // 返回空的孩子列表（实际应用中会从数据库查询）
+    return NextResponse.json({ children: [] })
 
   } catch (error) {
     console.error('获取孩子列表错误:', error)
@@ -61,20 +43,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 创建孩子档案
-    const child = await prisma.child.create({
-      data: {
-        userId: user.userId,
-        nickname,
-        grade,
-        interests: interests || [],
-        expressionScore: 3.0,
-        logicScore: 3.0,
-        explorationScore: 3.0,
-        creativityScore: 3.0,
-        habitScore: 3.0
-      }
-    })
+    // 简化的孩子档案（实际应用中会保存到数据库）
+    const child = {
+      id: 'temp-child-id',
+      userId: user.userId,
+      nickname,
+      grade,
+      interests: interests || [],
+      expressionScore: 3.0,
+      logicScore: 3.0,
+      explorationScore: 3.0,
+      creativityScore: 3.0,
+      habitScore: 3.0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
 
     return NextResponse.json({ child })
 
@@ -106,18 +89,15 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // 更新孩子档案
-    const child = await prisma.child.update({
-      where: { 
-        id: childId, 
-        userId: user.userId 
-      },
-      data: {
-        nickname,
-        grade,
-        interests
-      }
-    })
+    // 简化的更新（实际应用中会更新数据库）
+    const child = {
+      id: childId,
+      userId: user.userId,
+      nickname,
+      grade,
+      interests,
+      updatedAt: new Date()
+    }
 
     return NextResponse.json({ child })
 

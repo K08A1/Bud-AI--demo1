@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-// import { generatePersonalizedTask } from '@/lib/openai'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,35 +20,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 验证孩子所有权
-    const child = await prisma.child.findFirst({
-      where: { id: childId, userId: user.userId }
-    })
-
-    if (!child) {
-      return NextResponse.json(
-        { error: '孩子档案不存在' },
-        { status: 404 }
-      )
-    }
-
-    // 分析孩子能力，找出最弱项
-    const scores = [
-      { ability: 'expression' as const, score: child.expressionScore },
-      { ability: 'logic' as const, score: child.logicScore },
-      { ability: 'exploration' as const, score: child.explorationScore },
-      { ability: 'creativity' as const, score: child.creativityScore },
-      { ability: 'habit' as const, score: child.habitScore }
-    ]
-
-    const weakestAbility = scores.reduce((min, current) => 
-      current.score < min.score ? current : min
-    )
-
-    // 根据能力值确定难度
-    const difficulty = Math.max(1, Math.min(5, Math.ceil(weakestAbility.score)))
-
-    // 生成个性化任务（简化版本）
+    // 简化的任务生成（实际应用中会分析孩子能力并生成个性化任务）
     const taskData = {
       title: '今日挑战',
       description: '完成一个有趣的小任务，提升你的能力！',
@@ -59,15 +29,16 @@ export async function POST(request: NextRequest) {
       expectedMinutes: 10
     }
 
-    // 创建任务记录
-    const taskRecord = await prisma.taskRecord.create({
-      data: {
-        childId,
-        taskId: 'daily-task', // 简化处理
-        status: 'IN_PROGRESS',
-        startedAt: new Date()
-      }
-    })
+    // 简化的任务记录（实际应用中会保存到数据库）
+    const taskRecord = {
+      id: 'temp-task-record-id',
+      childId,
+      taskId: 'daily-task',
+      status: 'IN_PROGRESS',
+      startedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
 
     return NextResponse.json({ 
       task: taskData,

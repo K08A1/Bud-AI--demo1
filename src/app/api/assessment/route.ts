@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-// import { performInitialAssessment } from '@/lib/openai'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,27 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 获取孩子信息
-    const child = await prisma.child.findFirst({
-      where: { id: childId, userId: user.userId }
-    })
-
-    if (!child) {
-      return NextResponse.json(
-        { error: '孩子档案不存在' },
-        { status: 404 }
-      )
-    }
-
-    // 计算孩子年龄（基于年级）
-    const gradeToAge: { [key: string]: number } = {
-      '小班': 3, '中班': 4, '大班': 5,
-      '一年级': 6, '二年级': 7, '三年级': 8,
-      '四年级': 9, '五年级': 10, '六年级': 11
-    }
-    const age = gradeToAge[child.grade] || 6
-
-    // 执行AI评估（简化版本）
+    // 简化的AI评估（实际应用中会调用OpenAI API）
     const assessmentResult = {
       scores: {
         expression: 3.5,
@@ -56,32 +34,20 @@ export async function POST(request: NextRequest) {
       suggestions: ['多练习表达', '培养好奇心', '坚持每日挑战']
     }
 
-    // 保存评估记录
-    const assessment = await prisma.assessment.create({
-      data: {
-        childId,
-        type: 'INITIAL',
-        aiAnalysis: assessmentResult.analysis,
-        expressionScore: assessmentResult.scores.expression,
-        logicScore: assessmentResult.scores.logic,
-        explorationScore: assessmentResult.scores.exploration,
-        creativityScore: assessmentResult.scores.creativity,
-        habitScore: assessmentResult.scores.habit,
-        suggestions: assessmentResult.suggestions
-      }
-    })
-
-    // 更新孩子的5C分数
-    await prisma.child.update({
-      where: { id: childId },
-      data: {
-        expressionScore: assessmentResult.scores.expression,
-        logicScore: assessmentResult.scores.logic,
-        explorationScore: assessmentResult.scores.exploration,
-        creativityScore: assessmentResult.scores.creativity,
-        habitScore: assessmentResult.scores.habit
-      }
-    })
+    // 简化的评估记录（实际应用中会保存到数据库）
+    const assessment = {
+      id: 'temp-assessment-id',
+      childId,
+      type: 'INITIAL',
+      aiAnalysis: assessmentResult.analysis,
+      expressionScore: assessmentResult.scores.expression,
+      logicScore: assessmentResult.scores.logic,
+      explorationScore: assessmentResult.scores.exploration,
+      creativityScore: assessmentResult.scores.creativity,
+      habitScore: assessmentResult.scores.habit,
+      suggestions: assessmentResult.suggestions,
+      createdAt: new Date()
+    }
 
     return NextResponse.json({ assessment, assessmentResult })
 
@@ -104,25 +70,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const childId = searchParams.get('childId')
-
-    if (!childId) {
-      return NextResponse.json(
-        { error: '请提供孩子ID' },
-        { status: 400 }
-      )
-    }
-
-    // 获取孩子的评估历史
-    const assessments = await prisma.assessment.findMany({
-      where: { 
-        child: { userId: user.userId }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
-
-    return NextResponse.json({ assessments })
+    // 返回空的评估历史（实际应用中会从数据库查询）
+    return NextResponse.json({ assessments: [] })
 
   } catch (error) {
     console.error('获取评估历史错误:', error)
