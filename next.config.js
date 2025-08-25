@@ -37,7 +37,9 @@ const nextConfig = {
     domains: ['localhost', 'res.cloudinary.com'], // 添加图片域名白名单
   },
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
   },
 }
 
