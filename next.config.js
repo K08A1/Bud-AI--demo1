@@ -8,7 +8,9 @@ const nextConfig = {
     domains: ['localhost', 'res.cloudinary.com'],
   },
   experimental: {
-    serverActions: false,
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
   },
   // 排除API路由
   pageExtensions: ['tsx', 'ts'],
@@ -21,4 +23,4 @@ const nextConfig = {
   },
 }
 
-module.exports = withPWA(nextConfig) 
+module.exports = nextConfig 
