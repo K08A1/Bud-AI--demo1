@@ -33,8 +33,6 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'export',
-  trailingSlash: true,
   images: {
     domains: ['localhost', 'res.cloudinary.com'], // 添加图片域名白名单
   },
