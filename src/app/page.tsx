@@ -1,7 +1,3 @@
-'use client'
-
-import { motion } from 'framer-motion'
-
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -10,22 +6,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                className="text-2xl font-bold text-indigo-600"
-              >
+              <div className="text-2xl font-bold text-indigo-600">
                 🌱 Bud AI
-              </motion.div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-              >
+              <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                 立即体验
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -34,12 +22,7 @@ export default function HomePage() {
       {/* 主要内容 */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* 英雄区域 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             AI 驱动儿童
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
@@ -50,22 +33,13 @@ export default function HomePage() {
             基于5C能力模型（表达力、逻辑力、探究力、创造力、习惯力），
             通过AI个性化陪练，让每个孩子都能看见自己的成长轨迹
           </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-lg transition-all"
-          >
+          <button className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-lg transition-all">
             开始免费体验
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
         {/* 能力雷达图演示 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-16"
-        >
+        <div className="mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
             5C能力雷达图
           </h2>
@@ -100,15 +74,10 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* 特色功能 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mb-16"
-        >
+        <div className="mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
             核心特色
           </h2>
@@ -130,9 +99,8 @@ export default function HomePage() {
                 description: "亲子协作创作，AI辅助生成绘本和音频"
               }
             ].map((feature, index) => (
-              <motion.div
+              <div
                 key={index}
-                whileHover={{ y: -5 }}
                 className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all"
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -140,18 +108,13 @@ export default function HomePage() {
                   {feature.title}
                 </h3>
                 <p className="text-gray-600">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* 价格方案 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mb-16"
-        >
+        <div className="mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
             选择适合您的方案
           </h2>
@@ -203,7 +166,7 @@ export default function HomePage() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </main>
 
       {/* 页脚 */}
