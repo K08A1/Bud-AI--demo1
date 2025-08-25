@@ -81,60 +81,47 @@ Bud AI 是一个基于人工智能的儿童素质能力成长系统，专注于�
 - PostgreSQL 12+
 - OpenAI API 密钥
 
-### 1. 克隆项目
+### 本地开发
 ```bash
-git clone https://github.com/your-username/bud-ai.git
+# 克隆项目
+git clone https://github.com/你的用户名/bud-ai.git
 cd bud-ai
-```
 
-### 2. 安装依赖
-```bash
+# 安装依赖
 npm install
-```
 
-### 3. 环境配置
-```bash
-cp env.example .env
-```
+# 配置环境变量
+cp env.example .env.local
+# 编辑 .env.local 文件，填入必要的配置
 
-编辑 `.env` 文件，配置以下环境变量：
-```env
-# 数据库配置
-DATABASE_URL="postgresql://username:password@localhost:5432/bud_ai"
+# 启动数据库（需要先安装 PostgreSQL）
+# 或者使用 Docker:
+docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres:15
 
-# JWT配置
-JWT_SECRET="your-super-secret-jwt-key"
-JWT_EXPIRES_IN="7d"
+# 初始化数据库
+npm run db:push
 
-# OpenAI配置
-OPENAI_API_KEY="your-openai-api-key"
-OPENAI_MODEL="gpt-4-turbo-preview"
-
-# 应用配置
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_NAME="Bud AI"
-NEXT_PUBLIC_PWA_ENABLED="true"
-```
-
-### 4. 数据库初始化
-```bash
-# 生成 Prisma 客户端
-npx prisma generate
-
-# 推送数据库架构
-npx prisma db push
-
-# 可选：查看数据库
-npx prisma studio
-```
-
-### 5. 启动项目
-```bash
-# 使用启动脚本（推荐）
-./start.sh
-
-# 或手动启动
+# 启动开发服务器
 npm run dev
+```
+
+### 部署到生产环境
+
+#### 方法1：GitHub + Vercel（推荐）
+1. 推送代码到 GitHub
+2. 连接 Vercel 项目
+3. 配置环境变量
+4. 自动部署完成
+
+详细步骤请查看 [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+#### 方法2：手动部署
+```bash
+# 构建生产版本
+npm run build
+
+# 启动生产服务器
+npm start
 ```
 
 访问 http://localhost:3000 开始使用！
